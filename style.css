@@ -257,18 +257,3 @@ body {
   text-underline-offset: 3px;
 }
 
-@media (min-width: 768px) {
-  .page {
-    padding-top: 32px;
-  }
-
-  .wheel-frame {
-    max-width: 560px;
-  }
-
-  .pointer {
-    right: -16px;
-  }
-}
-
-
