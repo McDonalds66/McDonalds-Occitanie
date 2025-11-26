@@ -77,12 +77,15 @@ const spin = () => {
     wheel.style.transform = `rotate(${targetRotation}deg)`;
 
     const winner = computeWinner();
-    console.log('Gain:', winner);
 
     setTimeout(() => {
       spinning = false;
       spinBtn.disabled = false;
-    }, 400);
+      if (winner.toLowerCase() !== 'perdu') {
+        const urlPrize = encodeURIComponent(winner);
+        window.location.href = `win.html?lot=${urlPrize}`;
+      }
+    }, 500);
   };
 
   requestAnimationFrame(animate);

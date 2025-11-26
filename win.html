@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bravo ! Vous avez gagné</title>
+  <link rel="icon" type="image/png" href="asset/image/mcdo-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="win.css">
+</head>
+<body>
+  <div class="page">
+    <header class="logo-wrap">
+      <img src="asset/image/m-mcdo.png" alt="McDonald's" class="logo">
+    </header>
+
+    <main class="content">
+      <h1 class="title">
+        <span class="primary">Bravo !</span>
+        <span class="secondary">Vous avez gagné</span>
+        <span class="prize" id="prizeName">le nom du lot</span>
+      </h1>
+
+      <form class="code-form" id="codeForm">
+        <label for="code">Entrez votre code à 8 caractères (lettres et chiffres) pour récupérer votre récompense</label>
+        <input id="code" name="code" type="text" pattern="[A-Za-z0-9]{8}" maxlength="8" placeholder="AB12CD34" required>
+        <button type="submit" id="submitBtn" disabled>Valider</button>
+        <div id="status-message" class="status"></div>
+        <p class="hint">Le code doit contenir exactement 8 caractères alphanumériques.</p>
+      </form>
+    </main>
+
+    <footer class="footer-links">
+      <a href="#">Règlement</a>
+      <a href="#">Contact pro</a>
+      <a href="#">Aide</a>
+    </footer>
+  </div>
+
+  <script src="win.js"></script>
+</body>
+</html>
