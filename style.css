@@ -192,7 +192,7 @@ body {
 
 .decor.character {
   right: -20%;
-  top: -10%;
+  top: -0%;
   width: clamp(140px, 35vw, 190px);
 }
 
