@@ -29,13 +29,6 @@ const tickPointer = () => {
   setTimeout(() => pointer.classList.remove('tick'), 80);
 };
 
-const computeWinner = () => {
-  const normalized = ((currentRotation % 360) + 360) % 360;
-  const pointerOnWheel = (pointerDeg - normalized + 360) % 360;
-  const idx = Math.floor(((pointerOnWheel - baseStartDeg + 360) % 360) / 45) % segments.length;
-  return segments[idx];
-};
-
 const spin = () => {
   if (spinning) return;
   spinning = true;
@@ -45,8 +38,14 @@ const spin = () => {
   headlineSecondary.textContent = 'bonne chance !';
 
   const fullRotations = 4 + Math.floor(Math.random() * 3); // 4 to 6 full turns
-  const randomOffset = Math.random() * 360;
-  const targetRotation = currentRotation + fullRotations * 360 + randomOffset;
+
+  // Choisir un index gagnant aléatoire et calculer l'angle final pour aligner sa tranche sous la flèche
+  const targetIndex = Math.floor(Math.random() * segments.length);
+  const targetAngle = baseStartDeg + targetIndex * 45; // angle de la tranche gagnante
+  const currentMod = ((currentRotation % 360) + 360) % 360;
+  const desiredMod = (pointerDeg - targetAngle + 360) % 360;
+  const deltaToTarget = (desiredMod - currentMod + 360) % 360;
+  const targetRotation = currentRotation + fullRotations * 360 + deltaToTarget;
   const duration = 4400 + Math.random() * 800;
 
   const startRotation = currentRotation;
@@ -76,11 +75,10 @@ const spin = () => {
     currentRotation = targetRotation;
     wheel.style.transform = `rotate(${targetRotation}deg)`;
 
-    const winner = computeWinner();
-
     setTimeout(() => {
       spinning = false;
       spinBtn.disabled = false;
+      const winner = segments[targetIndex];
       if (winner.toLowerCase() !== 'perdu') {
         const urlPrize = encodeURIComponent(winner);
         window.location.href = `win.html?lot=${urlPrize}`;
