@@ -155,8 +155,11 @@ body {
   font-size: clamp(12px, 3.9vw, 17px);
   letter-spacing: -0.2px;
 
- transform: translate(-50%, -50%) rotate(calc(90deg + 45deg * var(--i))) translateY(-62%) rotate(-90deg);
-} 
+  transform: translate(-50%, -50%)
+             rotate(calc(90deg + 45deg * var(--i)))
+             translateY(-62%)
+             rotate(90deg);
+}
 
 
 
