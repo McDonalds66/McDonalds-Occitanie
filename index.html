@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roue McDo</title>
+  <link rel="icon" type="image/png" href="asset/image/mcdo-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <img class="logo" src="asset/image/m-mcdo.png" alt="Logo McDonald's">
+      <div class="headline">
+        <span class="line primary" id="headline-primary">Tournez la roue pour</span>
+        <span class="line accent" id="headline-secondary">découvrir votre cadeau</span>
+      </div>
+    </header>
+
+    <main class="wheel-section">
+      <div class="wheel-area">
+        <div class="decor character">
+          <img src="asset/image/happy.png" alt="Mascotte Happy Meal">
+        </div>
+        <div class="wheel-frame">
+          <div class="wheel-shadow">
+            <div class="wheel" id="wheel">
+              <div class="wheel-shine"></div>
+              <div class="wheel-band"></div>
+              <div class="labels">
+                <div class="slice-label" style="--i:0; --color: var(--text-yellow);">1 Surprise McDo</div>
+                <div class="slice-label" style="--i:1; --color: var(--text-red);">1 Petite boisson</div>
+                <div class="slice-label" style="--i:2; --color: var(--text-yellow);">perdu</div>
+                <div class="slice-label" style="--i:3; --color: var(--text-red);">1 Surprise McDo</div>
+                <div class="slice-label" style="--i:4; --color: var(--text-yellow);">4 McNuggets™</div>
+                <div class="slice-label" style="--i:5; --color: var(--text-red);">1 Donuts</div>
+                <div class="slice-label" style="--i:6; --color: var(--text-yellow);">1 Menu Best Of™</div>
+                <div class="slice-label" style="--i:7; --color: var(--text-red);">1 Sundae</div>
+              </div>
+            </div>
+          </div>
+          <div class="pointer" id="pointer"></div>
+        </div>
+        <div class="decor gift">
+          <img src="asset/image/cadeaux.png" alt="Cadeau">
+        </div>
+      </div>
+
+      <button class="spin-btn" id="spinBtn">TOURNER LA ROUE</button>
+
+      <footer class="footer-links">
+        <a href="#">Règlement</a>
+        <a href="#">Contact pro</a>
+        <a href="#">Aide</a>
+      </footer>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
