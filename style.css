@@ -203,13 +203,14 @@ body {
 }
 
 .decor.gift {
-  bottom: -7%;
+  bottom: -13%;
+  right: 150px;
   width: clamp(120px, 34vw, 180px);
-  transform: rotate(-10deg);
+  transform: rotate(-19deg);
 }
 
 .decor.gift img {
-  width: 100%;
+  width: 140%;
   height: auto;
   display: block;
   filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.35));
