@@ -271,17 +271,4 @@ body {
   }
 }
 
-@media (max-width: 400px) {
-  .header {
-    gap: 10px;
-  }
 
-  .logo {
-    height: 46px;
-  }
-
-  .slice-label {
-    width: 64%;
-    transform: rotate(calc(90deg + 45deg * var(--i))) translate(12%, -60%);
-  }
-}
