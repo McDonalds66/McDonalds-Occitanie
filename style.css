@@ -148,7 +148,7 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 85%;
+  width: 90%;
   transform-origin: center center;
   font-weight: 700;
   color: var(--color);
