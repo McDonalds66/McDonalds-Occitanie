@@ -3,6 +3,7 @@ const pointer = document.getElementById('pointer');
 const spinBtn = document.getElementById('spinBtn');
 const headlinePrimary = document.getElementById('headline-primary');
 const headlineSecondary = document.getElementById('headline-secondary');
+const cooldownMessage = document.getElementById('cooldownMessage');
 
 const segments = [
   '1 Surprise McDo',
@@ -17,8 +18,75 @@ const segments = [
 
 let currentRotation = 0;
 let spinning = false;
+const defaultHeadlinePrimary = headlinePrimary.textContent;
+const defaultHeadlineSecondary = headlineSecondary.textContent;
 
-// Pointer on the right at 90°, first slice starts at 67.5° so its center sits at the pointer when rotation = 0
+const DAY_MS = 24 * 60 * 60 * 1000;
+const STORAGE_KEY = 'wheelLastSpinAt';
+
+const getLastSpin = () => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const parsed = stored ? parseInt(stored, 10) : 0;
+    return Number.isFinite(parsed) ? parsed : 0;
+  } catch (err) {
+    return 0;
+  }
+};
+
+const setLastSpin = (timestamp) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, String(timestamp));
+  } catch (err) {
+    // Storage may be unavailable (e.g., private mode); ignore and allow play.
+  }
+};
+
+const getCooldownState = () => {
+  const last = getLastSpin();
+  if (!last) {
+    return { allowed: true, remainingMs: 0 };
+  }
+
+  const elapsed = Date.now() - last;
+  if (elapsed >= DAY_MS) {
+    return { allowed: true, remainingMs: 0 };
+  }
+
+  return { allowed: false, remainingMs: DAY_MS - elapsed };
+};
+
+const formatRemaining = (ms) => {
+  const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+  if (hours > 0) {
+    return `${hours}h${minutes.toString().padStart(2, '0')}`;
+  }
+
+  return `${minutes}min`;
+};
+
+const applyCooldownState = (state = getCooldownState()) => {
+  if (state.allowed) {
+    if (!spinning) {
+      spinBtn.disabled = false;
+    }
+    cooldownMessage.textContent = '';
+    headlinePrimary.textContent = defaultHeadlinePrimary;
+    headlineSecondary.textContent = defaultHeadlineSecondary;
+    return;
+  }
+
+  spinBtn.disabled = true;
+  const remainingText = formatRemaining(state.remainingMs || DAY_MS);
+  cooldownMessage.textContent = `Vous avez deja lance la roue. Reviens dans ${remainingText}.`;
+  headlinePrimary.textContent = 'A demain !';
+  headlineSecondary.textContent = '1 tour par jour et par appareil.';
+};
+
+// Pointer on the right at 90 deg, first slice starts at 67.5 deg so its center sits at the pointer when rotation = 0
 const baseStartDeg = 67.5;
 const pointerDeg = 90;
 
@@ -38,7 +106,14 @@ const computeWinner = () => {
 
 const spin = () => {
   if (spinning) return;
+  const cooldown = getCooldownState();
+  if (!cooldown.allowed) {
+    applyCooldownState(cooldown);
+    return;
+  }
+
   spinning = true;
+  setLastSpin(Date.now());
   spinBtn.disabled = true;
 
   headlinePrimary.textContent = "C'est tout bon,";
@@ -80,7 +155,7 @@ const spin = () => {
 
     setTimeout(() => {
       spinning = false;
-      spinBtn.disabled = false;
+      applyCooldownState();
       if (winner.toLowerCase() !== 'perdu') {
         const urlPrize = encodeURIComponent(winner);
         window.location.href = `win.html?lot=${urlPrize}`;
@@ -92,3 +167,4 @@ const spin = () => {
 };
 
 spinBtn.addEventListener('click', spin);
+applyCooldownState();
