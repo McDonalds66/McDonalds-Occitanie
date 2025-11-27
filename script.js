@@ -18,6 +18,7 @@ const segments = [
 
 let currentRotation = 0;
 let spinning = false;
+let privateBlocked = false;
 const defaultHeadlinePrimary = headlinePrimary.textContent;
 const defaultHeadlineSecondary = headlineSecondary.textContent;
 
@@ -86,6 +87,61 @@ const applyCooldownState = (state = getCooldownState()) => {
   headlineSecondary.textContent = '1 tour par jour et par appareil.';
 };
 
+const blockForPrivateMode = () => {
+  privateBlocked = true;
+  spinBtn.disabled = true;
+  cooldownMessage.textContent = 'Navigation privee detectee. Desactive-la pour utiliser la roue.';
+  headlinePrimary.textContent = 'Navigation privee';
+  headlineSecondary.textContent = '1 tour par jour et par appareil.';
+};
+
+const detectPrivateMode = () =>
+  new Promise((resolve) => {
+    const finish = (isPrivate) => resolve(!!isPrivate);
+    const isSafari = () => {
+      const ua = navigator.userAgent;
+      return /Safari/.test(ua) && !/Chrome/.test(ua);
+    };
+
+    if (typeof window === 'undefined') {
+      finish(false);
+      return;
+    }
+
+    // Chrome/Edge
+    if ('webkitRequestFileSystem' in window) {
+      window.webkitRequestFileSystem(
+        window.TEMPORARY,
+        1,
+        () => finish(false),
+        () => finish(true)
+      );
+      return;
+    }
+
+    // Safari
+    if (isSafari()) {
+      try {
+        window.openDatabase(null, null, null, null);
+        finish(false);
+      } catch (e) {
+        finish(true);
+      }
+      return;
+    }
+
+    // Fallback using storage quota (works on Firefox/Chromium)
+    if (navigator.storage && navigator.storage.estimate) {
+      navigator.storage
+        .estimate()
+        .then(({ quota }) => finish(quota && quota < 120000000))
+        .catch(() => finish(false));
+      return;
+    }
+
+    finish(false);
+  });
+
 // Pointer on the right at 90 deg, first slice starts at 67.5 deg so its center sits at the pointer when rotation = 0
 const baseStartDeg = 67.5;
 const pointerDeg = 90;
@@ -105,7 +161,7 @@ const computeWinner = () => {
 };
 
 const spin = () => {
-  if (spinning) return;
+  if (spinning || privateBlocked) return;
   const cooldown = getCooldownState();
   if (!cooldown.allowed) {
     applyCooldownState(cooldown);
@@ -167,4 +223,19 @@ const spin = () => {
 };
 
 spinBtn.addEventListener('click', spin);
-applyCooldownState();
+
+const initWheel = async () => {
+  try {
+    const isPrivate = await detectPrivateMode();
+    if (isPrivate) {
+      blockForPrivateMode();
+      return;
+    }
+  } catch (err) {
+    // If detection fails, default to allowing play with standard cooldown.
+  }
+
+  applyCooldownState();
+};
+
+initWheel();
