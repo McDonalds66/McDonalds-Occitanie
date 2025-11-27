@@ -95,52 +95,123 @@ const blockForPrivateMode = () => {
   headlineSecondary.textContent = '1 tour par jour et par appareil.';
 };
 
-const detectPrivateMode = () =>
-  new Promise((resolve) => {
-    const finish = (isPrivate) => resolve(!!isPrivate);
-    const isSafari = () => {
-      const ua = navigator.userAgent;
-      return /Safari/.test(ua) && !/Chrome/.test(ua);
-    };
+const detectPrivateMode = async () => {
+  if (typeof window === 'undefined') return false;
 
-    if (typeof window === 'undefined') {
-      finish(false);
-      return;
-    }
+  let strongHit = false;
+  let weakHits = 0;
+  const weakThreshold = 2;
+  const isSafari = (() => {
+    const ua = navigator.userAgent;
+    return /Safari/.test(ua) && !/Chrome/.test(ua);
+  })();
 
-    // Chrome/Edge
-    if ('webkitRequestFileSystem' in window) {
+  // Heuristic 1: localStorage write capability
+  try {
+    const testKey = '__pvt_test__';
+    localStorage.setItem(testKey, '1');
+    localStorage.removeItem(testKey);
+  } catch (err) {
+    strongHit = true;
+  }
+
+  const checks = [];
+
+  // Heuristic 2: webkitRequestFileSystem (Chrome/Edge)
+  checks.push(
+    new Promise((resolve) => {
+      if (!('webkitRequestFileSystem' in window)) {
+        resolve(false);
+        return;
+      }
       window.webkitRequestFileSystem(
         window.TEMPORARY,
         1,
-        () => finish(false),
-        () => finish(true)
+        () => resolve(false),
+        () => resolve(true)
       );
-      return;
-    }
+    }).then((hit) => {
+      if (hit) strongHit = true;
+    })
+  );
 
-    // Safari
-    if (isSafari()) {
+  // Heuristic 3: WebSQL (Safari)
+  checks.push(
+    new Promise((resolve) => {
+      if (!isSafari || !window.openDatabase) {
+        resolve(false);
+        return;
+      }
       try {
         window.openDatabase(null, null, null, null);
-        finish(false);
-      } catch (e) {
-        finish(true);
+        resolve(false);
+      } catch (err) {
+        resolve(true);
       }
-      return;
-    }
+    }).then((hit) => {
+      if (hit) strongHit = true;
+    })
+  );
 
-    // Fallback using storage quota (works on Firefox/Chromium)
-    if (navigator.storage && navigator.storage.estimate) {
-      navigator.storage
-        .estimate()
-        .then(({ quota }) => finish(quota && quota < 120000000))
-        .catch(() => finish(false));
-      return;
-    }
+  // Heuristic 4: IndexedDB availability
+  checks.push(
+    new Promise((resolve) => {
+      if (!window.indexedDB) {
+        resolve(true);
+        return;
+      }
+      const req = indexedDB.open('__pvt_idb__', 1);
+      let hit = false;
+      req.onerror = () => {
+        hit = true;
+        resolve(true);
+      };
+      req.onsuccess = () => {
+        req.result.close();
+        indexedDB.deleteDatabase('__pvt_idb__');
+        resolve(false);
+      };
+      req.onblocked = () => resolve(true);
+      setTimeout(() => resolve(hit), 500);
+    }).then((hit) => {
+      if (hit) weakHits += 1;
+    })
+  );
 
-    finish(false);
-  });
+  // Heuristic 5: Storage quota (Firefox/Chromium)
+  checks.push(
+    (async () => {
+      if (!(navigator.storage && navigator.storage.estimate)) return;
+      try {
+        const { quota = 0 } = await navigator.storage.estimate();
+        if (quota && quota < 120000000) {
+          weakHits += 1;
+        }
+      } catch (err) {
+        // ignore
+      }
+    })()
+  );
+
+  // Heuristic 6: Persistent storage support
+  checks.push(
+    (async () => {
+      if (!(navigator.storage && navigator.storage.persisted)) return;
+      try {
+        const persisted = await navigator.storage.persisted();
+        if (!persisted) {
+          weakHits += 1;
+        }
+      } catch (err) {
+        // ignore
+      }
+    })()
+  );
+
+  await Promise.all(checks);
+
+  return strongHit || weakHits >= weakThreshold;
+};
 
 // Pointer on the right at 90 deg, first slice starts at 67.5 deg so its center sits at the pointer when rotation = 0
 const baseStartDeg = 67.5;
